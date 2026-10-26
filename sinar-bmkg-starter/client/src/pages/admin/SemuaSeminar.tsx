@@ -1,3 +1,4 @@
+import { labelJadwal } from '../../lib/sesi'
 // Halaman admin: Semua Seminar — cari, filter status, Batalkan, Hapus permanen, tandai surat asli.
 import { useCallback, useEffect, useState } from 'react'
 import { get, post, del } from '../../lib/api'
@@ -108,7 +109,7 @@ export default function SemuaSeminar() {
                     <td style={{ whiteSpace: 'nowrap' }}>
                       {fmtTanggalPendek(s.date)}
                       <br />
-                      <span className="hint">{s.startTime}–{s.endTime} WIB</span>
+                      <span className="hint">{labelJadwal(s.startTime, s.endTime)}</span>
                     </td>
                     <td>{s.locationOther ?? s.location.name}</td>
                     <td>

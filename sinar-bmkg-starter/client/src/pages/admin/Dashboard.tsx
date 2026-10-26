@@ -1,3 +1,4 @@
+import { labelJadwal } from '../../lib/sesi'
 // Halaman admin: Dashboard — statistik, perlu tindakan, aktivitas terbaru, seminar mendatang.
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -80,7 +81,7 @@ export default function Dashboard() {
                   <b>{s.title}</b>
                   <br />
                   <span className="hint">
-                    {fmtTanggalPendek(s.date)} · {s.startTime}–{s.endTime} WIB · {s.locationOther ?? s.location.name} · {s.user?.name}
+                    {fmtTanggalPendek(s.date)} · {labelJadwal(s.startTime, s.endTime)} · {s.locationOther ?? s.location.name} · {s.user?.name}
                   </span>
                 </p>
               ))

@@ -1,3 +1,4 @@
+import { labelJadwal } from '../lib/sesi'
 // Halaman: Detail seminar milik user — tab Detail, Dokumen, dan Peserta & Absensi,
 // tombol Mulai/Selesai (dengan konfirmasi penutupan absensi), QR absensi, kode hadir.
 import { useCallback, useEffect, useState } from 'react'
@@ -93,7 +94,7 @@ export default function SeminarDetail() {
             {s.title} <Badge status={s.status} />
           </h1>
           <p>
-            Kode {s.code} · {fmtTanggal(s.date, true)}, {s.startTime}–{s.endTime} WIB · {s.locationOther ?? s.location.name}
+            Kode {s.code} · {fmtTanggal(s.date, true)}, {labelJadwal(s.startTime, s.endTime)} · {s.locationOther ?? s.location.name}
           </p>
         </div>
         <Link to="/seminar-saya" className="btn">
@@ -157,7 +158,7 @@ export default function SeminarDetail() {
                 <dd>{s.topic || '—'}</dd>
                 <dt className="hint">Jadwal</dt>
                 <dd>
-                  {fmtTanggal(s.date, true)}, {s.startTime}–{s.endTime} WIB
+                  {fmtTanggal(s.date, true)}, {labelJadwal(s.startTime, s.endTime)}
                 </dd>
                 <dt className="hint">Lokasi</dt>
                 <dd>
@@ -168,6 +169,42 @@ export default function SeminarDetail() {
                 <dd>
                   <Badge status={s.status} />
                 </dd>
+                <dt className="hint">Tipe Acara</dt>
+                <dd>
+                  <span className={`bd ${s.tipe_acara === 'Hybrid' ? 'Menunggu' : s.tipe_acara === 'Online' ? 'Berlangsung' : 'Selesai'}`}>
+                    {s.tipe_acara || 'Offline'}
+                  </span>
+                </dd>
+                {(s.zoom_link || s.tipe_acara === 'Online' || s.tipe_acara === 'Hybrid') && (
+                  <>
+                    <dt className="hint">Tautan Zoom</dt>
+                    <dd>
+                      {s.zoom_link ? (
+                        <a
+                          href={s.zoom_link.startsWith('http') ? s.zoom_link : `https://${s.zoom_link}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 dark:text-blue-400 font-medium underline flex items-center gap-1.5"
+                        >
+                          <span>🔗 Buka Zoom Meeting</span>
+                          <span className="text-xs text-slate-400">({s.zoom_link})</span>
+                        </a>
+                      ) : (
+                        <span className="hint">Belum ditentukan</span>
+                      )}
+                    </dd>
+                    {s.zoom_passcode && (
+                      <>
+                        <dt className="hint">Passcode Zoom</dt>
+                        <dd>
+                          <code className="px-2 py-0.5 rounded bg-slate-100 dark:bg-navy-950 font-mono text-sm border border-slate-200 dark:border-slate-800">
+                            {s.zoom_passcode}
+                          </code>
+                        </dd>
+                      </>
+                    )}
+                  </>
+                )}
                 {s.status === 'SELESAI' && (
                   <>
                     <dt className="hint">Surat asli</dt>

@@ -1,3 +1,4 @@
+import { labelJadwal } from '../../lib/sesi'
 // Halaman admin: Verifikasi Seminar — daftar pengajuan dengan pratinjau surat/poster,
 // indikator bentrok, tombol Setujui / Kembalikan (alasan wajib), dan bagian surat asli.
 import { useCallback, useEffect, useState } from 'react'
@@ -27,7 +28,7 @@ export default function Verifikasi() {
   }, [muat])
 
   const setujui = async (s: Jenis) => {
-    if (!confirm(`Setujui "${s.title}" (${fmtTanggalPendek(s.date)} ${s.startTime}–${s.endTime} WIB)?`)) return
+    if (!confirm(`Setujui "${s.title}" (${fmtTanggalPendek(s.date)}, ${labelJadwal(s.startTime, s.endTime)})?`)) return
     try {
       await post(`/api/admin/seminars/${s.id}/setujui`)
       setPesan(`Seminar "${s.title}" disetujui. Email pemberitahuan terkirim ke pemilik.`)
@@ -55,7 +56,7 @@ export default function Verifikasi() {
             <div>
               <h3>{s.title}</h3>
               <p className="hint">
-                Kode {s.code} · {fmtTanggalPendek(s.date)} {s.startTime}–{s.endTime} WIB · {s.locationOther ?? s.location.name}
+                Kode {s.code} · {fmtTanggalPendek(s.date)}, {labelJadwal(s.startTime, s.endTime)} · {s.locationOther ?? s.location.name}
               </p>
               <p className="hint">
                 Pemilik: {s.user.name} ({s.user.nip}) · {s.user.unit ?? '—'} · {s.user.email}
