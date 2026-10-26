@@ -5,14 +5,14 @@ import SeminarForm from '../components/SeminarForm'
 export default function BuatSeminar() {
   const navigate = useNavigate()
   return (
-    <>
+    <div className="form-narrow">
       <div className="top">
         <div>
           <h1>Buat Seminar</h1>
           <p>Ajukan seminar ilmiah Anda. Setelah diajukan, jadwal terkunci sampai diverifikasi admin.</p>
         </div>
       </div>
-      <div className="card" style={{ maxWidth: 760 }}>
+      <div className="card">
         <SeminarForm
           bisaSemua
           selesai={() => {
@@ -21,6 +21,6 @@ export default function BuatSeminar() {
           }}
         />
       </div>
-    </>
+    </div>
   )
 }

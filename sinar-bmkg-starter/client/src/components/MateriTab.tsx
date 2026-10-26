@@ -78,7 +78,8 @@ export default function MateriTab({ seminarId }: { seminarId: string }) {
         </div>
       )}
 
-      <h3 style={{ marginTop: 18 }}>Tambah Materi</h3>
+      <div className="form-narrow" style={{ margin: "18px 0 0" }}>
+      <h3>Tambah Materi</h3>
       <div className="dn" style={{ alignItems: 'center' }}>
         <label htmlFor="mt-n" style={{ margin: 0 }}>Jumlah materi yang akan ditambahkan</label>
         <input
@@ -94,6 +95,7 @@ export default function MateriTab({ seminarId }: { seminarId: string }) {
       {Array.from({ length: n }, (_, i) => (
         <FormMateri key={i} nomor={i + 1} seminarId={seminarId} selesai={() => void muat()} />
       ))}
+      </div>
     </div>
   )
 }

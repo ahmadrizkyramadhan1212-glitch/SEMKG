@@ -138,7 +138,7 @@ export default function SeminarDetail() {
       {s.status !== 'SELESAI' && (tab === 'materi' || tab === 'berita' || tab === 'sertifikat') && <p className="hint">Tab ini aktif setelah seminar selesai.</p>}
 
       {tab === 'detail' && (
-        <div className="card" style={{ maxWidth: 760 }}>
+        <div className="card form-narrow">
           {edit ? (
             <SeminarForm
               seminar={s}
