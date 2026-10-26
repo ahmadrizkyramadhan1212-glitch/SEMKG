@@ -71,7 +71,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
       <button
         key={s.id}
         className={`hv ${s.milik && s.status === 'MENUNGGU_VERIFIKASI' ? 'Menunggu' : ''} ${s.milik && (s.status === 'MENUNGGU_VERIFIKASI' || s.status === 'DIKEMBALIKAN') ? 'dim' : ''}`}
-        style={{ left: `${kiri(s.startTime)}%`, width: `${lebar(s.startTime, s.endTime)}%`, minWidth: 95 }}
+        style={{ left: `calc(${kiri(s.startTime)}% + 2px)`, width: `calc(${lebar(s.startTime, s.endTime)}% - 4px)`, minWidth: 95 }}
         onClick={(e) => {
           e.stopPropagation()
           navigate(s.milik ? `/seminar/${s.id}` : `/seminar-publik/${s.id}`)
@@ -111,7 +111,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
         {/* Pita Header Sesi: PAGI (07-12) dan SIANG (12-16) */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
           <div style={{ width: 'var(--lw)', flex: 'none', paddingLeft: 2 }}>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--p)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--p)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               Pita Sesi
             </span>
           </div>
@@ -132,7 +132,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                 gap: 6,
               }}
             >
-              <span>🌅 PAGI (07.00–12.00)</span>
+              <span>PAGI (07.00–12.00)</span>
             </div>
             <div
               style={{
@@ -149,7 +149,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                 gap: 6,
               }}
             >
-              <span>☀️ SIANG (12.00–16.00)</span>
+              <span>SIANG (12.00–16.00)</span>
             </div>
           </div>
         </div>
