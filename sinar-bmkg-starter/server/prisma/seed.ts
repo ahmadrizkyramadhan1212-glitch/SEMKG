@@ -1,5 +1,5 @@
 // Data awal untuk pengembangan. Jalankan: npx prisma db seed
-// Sandi semua akun contoh: Sinar#2026 (HANYA untuk pengembangan, ganti di produksi)
+// Sandi semua akun contoh: SEMINAR#2026 (HANYA untuk pengembangan, ganti di produksi)
 // Seed bisa dijalankan ulang: seminar dicocokkan lewat judul, tidak diduplikasi.
 import { PrismaClient, SeminarStatus } from '@prisma/client'
 import bcrypt from 'bcryptjs'
@@ -7,6 +7,7 @@ import crypto from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { env } from '../src/env.js'
+import { sesiDariJam } from '../src/lib/sesi.js'
 
 const db = new PrismaClient()
 // Tanggal disimpan UTC-tengah-malam sesuai konvensi aplikasi (kolom DATE): hari ini versi WIB
@@ -44,7 +45,7 @@ async function simpanContoh(sub: 'surat' | 'poster', judul: string, gambar: bool
 }
 
 async function main() {
-  const passwordHash = await bcrypt.hash('Sinar#2026', 10)
+  const passwordHash = await bcrypt.hash('SEMINAR#2026', 10)
 
   // Lokasi: dari yang terbesar sampai yang kecil, fasilitas lengkap sampai minim
   const loc = (key: string, name: string, type: 'PHYSICAL' | 'ONLINE' | 'OTHER', capacity?: number, facilities?: string) =>
@@ -55,8 +56,8 @@ async function main() {
   await loc('lainnya', 'Lainnya', 'OTHER')
 
   const mk = (name: string, nip: string, email: string, role: 'ADMIN' | 'USER', unit: string) =>
-    db.user.upsert({ where: { email }, update: {}, create: { name, nip, email, role, unit, passwordHash, phone: '08123456789' } })
-  await mk('Admin SINAR', '198001012005011001', 'admin@bmkg.go.id', 'ADMIN', 'Pusat Standardisasi')
+    db.user.upsert({ where: { nip }, update: {}, create: { name, nip, email, role, unit, passwordHash, phone: '08123456789' } })
+  await mk('Admin SEMINAR', '198001012005011001', 'admin@bmkg.go.id', 'ADMIN', 'Pusat Standardisasi')
   const nabila = await mk('Nabila Putri', '199505052020122001', 'nabila.putri@bmkg.go.id', 'USER', 'Bidang Klimatologi')
   const andi = await mk('Andi Pratama', '199203032018011002', 'andi.pratama@bmkg.go.id', 'USER', 'Bidang Geofisika')
 
@@ -73,10 +74,15 @@ async function main() {
   ) => {
     const lama = await db.seminar.findFirst({ where: { title, date: day(off) }, include: { files: true } })
     if (lama) return lama
+    const dObj = day(off)
+    const yy = String(dObj.getUTCFullYear() % 100).padStart(2, '0')
+    const mm = String(dObj.getUTCMonth() + 1).padStart(2, '0')
+    const KODE_ABJAD = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    const rnd = Array.from(crypto.randomBytes(3)).map((b) => KODE_ABJAD[b % KODE_ABJAD.length]).join('')
     const seminar = await db.seminar.create({
       data: {
-        title, topic: 'Seminar ilmiah', date: day(off), startTime: s, endTime: e, status: st, locationId, userId,
-        code: crypto.randomBytes(3).toString('hex').toUpperCase(), attendToken: tok(),
+        title, topic: 'Seminar ilmiah', date: dObj, startTime: s, endTime: e, sesi: sesiDariJam(s, e), status: st, locationId, userId,
+        code: `${yy}${mm}${rnd}`, attendToken: tok(),
         letterReceived: st !== 'MENUNGGU_VERIFIKASI' && st !== 'DIKEMBALIKAN',
       },
     })
@@ -100,18 +106,18 @@ async function main() {
     return db.seminar.findUniqueOrThrow({ where: { id: seminar.id }, include: { files: true } })
   }
 
-  await sem('Prakiraan Iklim Ekstrem Indonesia 2027', 0, '09:00', '11:00', 'DIJADWALKAN')
-  await sem('Kalibrasi Sensor Suhu Otomatis', 0, '13:00', '15:30', 'BERLANGSUNG')
-  await sem('Diskusi Panel Aktivitas Gempa Bumi', 2, '10:00', '12:00', 'DIJADWALKAN', rr.id, andi.id, 'lengkap')
-  await sem('Webinar Kualitas Udara Perkotaan', 4, '14:00', '16:00', 'MENUNGGU_VERIFIKASI', onl.id, nabila.id, 'lengkap')
-  const ret = await sem('Workshop Analisis Data Hujan', 7, '09:00', '12:00', 'DIKEMBALIKAN', rr.id, nabila.id, 'surat')
+  await sem('Prakiraan Iklim Ekstrem Indonesia 2027', 0, '07:00', '12:00', 'DIJADWALKAN')
+  await sem('Kalibrasi Sensor Suhu Otomatis', 0, '12:00', '16:00', 'BERLANGSUNG')
+  await sem('Diskusi Panel Aktivitas Gempa Bumi', 2, '07:00', '12:00', 'DIJADWALKAN', rr.id, andi.id, 'lengkap')
+  await sem('Webinar Kualitas Udara Perkotaan', 4, '12:00', '16:00', 'MENUNGGU_VERIFIKASI', onl.id, nabila.id, 'lengkap')
+  const ret = await sem('Workshop Analisis Data Hujan', 7, '07:00', '12:00', 'DIKEMBALIKAN', rr.id, nabila.id, 'surat')
   await db.seminar.update({ where: { id: ret.id }, data: { returnReason: 'Surat izin belum ditandatangani, mohon unggah ulang.' } })
-  const batal = await sem('Sosialisasi Peringatan Dini Tsunami', 5, '08:00', '09:30', 'DIBATALKAN', aud.id, andi.id, 'surat')
+  const batal = await sem('Sosialisasi Peringatan Dini Tsunami', 5, '07:00', '12:00', 'DIBATALKAN', aud.id, andi.id, 'surat')
   await db.seminar.update({ where: { id: batal.id }, data: { cancelledBy: 'USER', cancelledAt: new Date() } })
 
   // Dua seminar selesai lengkap: peserta, materi, dan (salah satunya) berita
   for (const [title, off, tag] of [['Dampak La Nina terhadap Curah Hujan', -14, 'a'], ['Pemodelan Numerik Cuaca (WRF)', -28, 'b']] as const) {
-    const s = await sem(title, off, '09:00', '12:00', 'SELESAI', aud.id, nabila.id, 'surat')
+    const s = await sem(title, off, '07:00', '12:00', 'SELESAI', aud.id, nabila.id, 'surat')
     if ((await db.attendance.count({ where: { seminarId: s.id } })) === 0)
       for (const [i, n] of ['Dewi Lestari', 'Hendra Gunawan', 'Maya Sari', 'Rizky Pratama'].entries())
         await db.attendance.create({ data: { seminarId: s.id, name: n, nip: `19900101${tag === 'a' ? 1 : 2}${i}`, email: `${n.split(' ')[0].toLowerCase()}.${tag}@contoh.go.id` } })
@@ -120,6 +126,6 @@ async function main() {
     if (tag === 'a' && !(await db.news.findUnique({ where: { seminarId: s.id } })))
       await db.news.create({ data: { seminarId: s.id, authorId: nabila.id, title: `Dokumentasi: ${title}`, body: 'Seminar berlangsung lancar dan dihadiri peserta dari berbagai unit kerja.' } })
   }
-  console.log('Seed selesai. Masuk dengan admin@bmkg.go.id atau nabila.putri@bmkg.go.id, sandi Sinar#2026')
+  console.log('Seed selesai. Masuk dengan admin@bmkg.go.id atau nabila.putri@bmkg.go.id, sandi SEMINAR#2026')
 }
 main().finally(() => db.$disconnect())

@@ -6,7 +6,8 @@ import { z } from 'zod'
 import { db } from '../db.js'
 import { requireAuth, type AuthRequest } from '../lib/auth.js'
 import { audit } from '../lib/audit.js'
-import { cekBentrok } from '../lib/bentrok.js'
+import { cekBentrok, cekSesiTersedia } from '../lib/bentrok.js'
+import { DAFTAR_SESI, normalisasiSesi, type SesiTipe } from '../lib/sesi.js'
 import { berkasDisimpan, simpanBerkas, jalurLokal, SET_SURAT, SET_POSTER, UploadError } from '../lib/upload.js'
 
 export const seminarsRouter = Router()
@@ -43,14 +44,73 @@ seminarsRouter.get('/locations', requireAuth, async (_req, res, next) => {
   }
 })
 
-// Indikator bentrok langsung di form (dipanggil saat jadwal berubah)
+// Cek ketersediaan sesi pada tanggal & lokasi (GET /api/seminars/sesi-tersedia)
+seminarsRouter.get('/sesi-tersedia', requireAuth, async (req, res, next) => {
+  try {
+    const q = z
+      .object({
+        locationId: z.string().min(1, 'locationId wajib diisi'),
+        date: tanggalBaru,
+        abaikan: z.string().optional(),
+      })
+      .safeParse(req.query)
+    if (!q.success) return res.status(400).json({ error: 'Parameter locationId dan date wajib diisi' })
+    const { locationId, date, abaikan } = q.data
+    const status = await cekSesiTersedia(locationId, new Date(`${date}T00:00:00.000Z`), abaikan)
+    res.json(status)
+  } catch (e) {
+    next(e)
+  }
+})
+
+// Alias /sesi-status untuk kompatibilitas mundur
+seminarsRouter.get('/sesi-status', requireAuth, async (req, res, next) => {
+  try {
+    const q = z
+      .object({
+        locationId: z.string().min(1),
+        date: tanggalBaru,
+        abaikan: z.string().optional(),
+      })
+      .safeParse(req.query)
+    if (!q.success) return res.status(400).json({ error: 'Parameter locationId dan date wajib diisi' })
+    const { locationId, date, abaikan } = q.data
+    const status = await cekSesiTersedia(locationId, new Date(`${date}T00:00:00.000Z`), abaikan)
+    res.json(status)
+  } catch (e) {
+    next(e)
+  }
+})
+
+// Indikator bentrok langsung di form (menerima sesi atau start/end)
 seminarsRouter.get('/bentrok', requireAuth, async (req, res, next) => {
   try {
     const q = z
-      .object({ locationId: z.string().min(1), date: tanggalBaru, start: jamBaru, end: jamBaru, abaikan: z.string().optional() })
+      .object({
+        locationId: z.string().min(1),
+        date: tanggalBaru,
+        sesi: z.string().optional(),
+        start: jamBaru.optional(),
+        end: jamBaru.optional(),
+        abaikan: z.string().optional(),
+      })
       .safeParse(req.query)
     if (!q.success) return res.json({ bentrok: [] })
-    const { locationId, date, start, end, abaikan } = q.data
+    const { locationId, date, abaikan } = q.data
+
+    const sesiNorm = normalisasiSesi(q.data.sesi)
+    let start = q.data.start
+    let end = q.data.end
+
+    if (sesiNorm && DAFTAR_SESI[sesiNorm]) {
+      start = DAFTAR_SESI[sesiNorm].start
+      end = DAFTAR_SESI[sesiNorm].end
+    }
+
+    if (!start || !end) {
+      return res.json({ bentrok: [] })
+    }
+
     if (start >= end) return res.json({ bentrok: [], jamTerbalik: true })
     const bentrok = await cekBentrok({
       locationId,
@@ -70,13 +130,14 @@ seminarsRouter.get('/mine', requireAuth, async (req: AuthRequest, res, next) => 
   try {
     const cari = String(req.query.cari ?? '').trim()
     const status = String(req.query.status ?? '')
+    const urut = String(req.query.urut ?? 'baru')
     const data = await db.seminar.findMany({
       where: {
         userId: req.user!.id,
         ...(cari && { OR: [{ title: { contains: cari } }, { topic: { contains: cari } }, { code: { contains: cari } }] }),
         ...(status && { status: status as never }),
       },
-      orderBy: { date: 'desc' },
+      orderBy: urut === 'jadwal' ? [{ date: 'desc' }, { startTime: 'desc' }] : [{ createdAt: 'desc' }],
       include: { location: true, files: true },
     })
     res.json(data)
@@ -111,12 +172,13 @@ seminarsRouter.post('/', requireAuth, campur.multer.fields([{ name: 'surat', max
         locationId: z.string().min(1, 'Lokasi wajib dipilih'),
         locationOther: z.string().optional(),
         date: tanggalBaru,
-        startTime: jamBaru,
-        endTime: jamBaru,
+        sesi: z.string().min(1, 'Sesi kegiatan wajib dipilih'),
+        tipe_acara: z.enum(['Offline', 'Online', 'Hybrid']).optional().nullable(),
+        zoom_link: z.string().max(500).optional().nullable(),
+        zoom_passcode: z.string().max(100).optional().nullable(),
         title: z.string().min(5, 'Judul minimal 5 karakter'),
         topic: z.string().max(500).optional(),
       })
-      .refine((d) => d.startTime < d.endTime, { message: 'Jam selesai harus setelah jam mulai', path: ['endTime'] })
     const parsed = skema.safeParse(b)
     if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Data tidak valid' })
     const data = parsed.data
@@ -127,6 +189,14 @@ seminarsRouter.post('/', requireAuth, campur.multer.fields([{ name: 'surat', max
       return res.status(400).json({ error: 'Tuliskan nama lokasi pada pilihan Lainnya' })
     }
 
+    const sesiNorm = normalisasiSesi(data.sesi)
+    if (!sesiNorm || !DAFTAR_SESI[sesiNorm]) {
+      return res.status(400).json({ error: 'Sesi tidak dikenal. Pilih sesi: PAGI, SIANG, atau FULL_DAY' })
+    }
+
+    const startTime = DAFTAR_SESI[sesiNorm].start
+    const endTime = DAFTAR_SESI[sesiNorm].end
+
     const surat = (req.files as Record<string, Express.Multer.File[]> | undefined)?.surat?.[0]
     if (!surat) return res.status(400).json({ error: 'Surat izin wajib diunggah' })
     await suratUnggah.validasi(surat)
@@ -134,10 +204,15 @@ seminarsRouter.post('/', requireAuth, campur.multer.fields([{ name: 'surat', max
     if (poster) await posterUnggah.validasi(poster)
 
     const tanggal = new Date(`${data.date}T00:00:00.000Z`)
-    const bentrok = await cekBentrok({ locationId: data.locationId, tanggal, mulai: data.startTime, selesai: data.endTime })
+    const bentrok = await cekBentrok({
+      locationId: data.locationId,
+      tanggal,
+      mulai: startTime,
+      selesai: endTime,
+    })
     if (bentrok.length > 0) {
       return res.status(409).json({
-        error: `Jadwal bentrok dengan "${bentrok[0]!.title}" (${bentrok[0]!.startTime}-${bentrok[0]!.endTime}) di lokasi yang sama. Pilih waktu lain.`,
+        error: `Jadwal bentrok dengan "${bentrok[0]!.title}" (${bentrok[0]!.startTime}-${bentrok[0]!.endTime}) di lokasi yang sama. Pilih sesi lain atau tanggal lain.`,
       })
     }
 
@@ -153,8 +228,12 @@ seminarsRouter.post('/', requireAuth, campur.multer.fields([{ name: 'surat', max
         title: data.title,
         topic: data.topic || null,
         date: tanggal,
-        startTime: data.startTime,
-        endTime: data.endTime,
+        startTime,
+        endTime,
+        sesi: sesiNorm,
+        tipe_acara: (data.tipe_acara as any) || 'Offline',
+        zoom_link: (data.tipe_acara === 'Online' || data.tipe_acara === 'Hybrid') ? (data.zoom_link?.trim() || null) : null,
+        zoom_passcode: (data.tipe_acara === 'Online' || data.tipe_acara === 'Hybrid') ? (data.zoom_passcode?.trim() || null) : null,
         status: 'MENUNGGU_VERIFIKASI',
         attendToken: crypto.randomBytes(12).toString('hex'),
         files: {
@@ -168,7 +247,7 @@ seminarsRouter.post('/', requireAuth, campur.multer.fields([{ name: 'surat', max
       },
       include: { files: true, location: true },
     })
-    await audit(req.user!.id, 'BUAT_SEMINAR', seminar.title, `Kode ${seminar.code}, ${data.date} ${data.startTime}-${data.endTime}`)
+    await audit(req.user!.id, 'BUAT_SEMINAR', seminar.title, `Kode ${seminar.code}, ${data.date} ${startTime}-${endTime} (Sesi ${sesiNorm})`)
     res.status(201).json(seminar)
   } catch (e) {
     next(e)
@@ -184,52 +263,65 @@ const ubahSkema = z
     locationId: z.string().optional(),
     locationOther: z.string().optional(),
     date: tanggalBaru.optional(),
+    sesi: z.string().optional().nullable(),
     startTime: jamBaru.optional(),
     endTime: jamBaru.optional(),
+    tipe_acara: z.enum(['Offline', 'Online', 'Hybrid']).optional().nullable(),
+    zoom_link: z.string().max(500).optional().nullable(),
+    zoom_passcode: z.string().max(100).optional().nullable(),
     title: z.string().min(5).optional(),
     topic: z.string().max(500).optional(),
   })
-  .refine((d) => !d.startTime || !d.endTime || d.startTime < d.endTime, { message: 'Jam selesai harus setelah jam mulai' })
 
 seminarsRouter.patch('/:id', requireAuth, async (req: AuthRequest, res, next) => {
   try {
-    const seminar = await db.seminar.findUnique({ where: { id: String(req.params.id) }, include: { location: true } })
+    const seminar = await db.seminar.findUnique({ where: { id: String(req.params.id) } })
     if (!seminar) return res.status(404).json({ error: 'Seminar tidak ditemukan' })
-    if (seminar.userId !== req.user!.id && req.user!.role !== 'ADMIN') return res.status(403).json({ error: 'Seminar ini bukan milik Anda' })
+    if (seminar.userId !== req.user!.id && req.user!.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Seminar ini bukan milik Anda' })
+    }
+    if (seminar.status === 'DIBATALKAN') {
+      return res.status(400).json({ error: 'Seminar yang dibatalkan tidak dapat diedit' })
+    }
 
     const parsed = ubahSkema.safeParse(req.body)
     if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Data tidak valid' })
     const data = parsed.data
 
-    const bisaSemua = seminar.status === 'MENUNGGU_VERIFIKASI' || seminar.status === 'DIKEMBALIKAN'
-    if (!bisaSemua) {
-      // Status maju: hanya judul dan topik yang boleh berubah
-      const mencobaKolomTerkunci =
-        data.locationId !== undefined || data.date !== undefined || data.startTime !== undefined || data.endTime !== undefined || data.locationOther !== undefined
-      if (mencobaKolomTerkunci) {
-        return res.status(403).json({
-          error: `Seminar berstatus ${seminar.status} hanya boleh mengubah judul dan topik. Untuk mengubah jadwal, batalkan lalu buat seminar baru.`,
-        })
-      }
-    }
-    if (seminar.status === 'DIBATALKAN') return res.status(400).json({ error: 'Seminar yang dibatalkan tidak dapat diedit' })
-
     const perubahan: Record<string, unknown> = {}
-    if (data.title !== undefined) perubahan.title = data.title
+    if (data.title) perubahan.title = data.title
     if (data.topic !== undefined) perubahan.topic = data.topic || null
+    if (data.tipe_acara) perubahan.tipe_acara = data.tipe_acara
 
-    if (bisaSemua && (data.locationId || data.date || data.startTime || data.endTime)) {
+    const bisaSemua = seminar.status === 'MENUNGGU_VERIFIKASI' || seminar.status === 'DIKEMBALIKAN'
+
+    if (data.zoom_link !== undefined && perubahan.tipe_acara !== 'Offline') {
+      perubahan.zoom_link = data.zoom_link?.trim() || null
+    }
+    if (data.zoom_passcode !== undefined && perubahan.tipe_acara !== 'Offline') {
+      perubahan.zoom_passcode = data.zoom_passcode?.trim() || null
+    }
+
+    if (bisaSemua && (data.locationId || data.date || data.sesi !== undefined || data.startTime || data.endTime)) {
       const locationId = data.locationId ?? seminar.locationId
       const date = data.date ?? seminar.date.toISOString().slice(0, 10)
-      const startTime = data.startTime ?? seminar.startTime
-      const endTime = data.endTime ?? seminar.endTime
-      if (startTime >= endTime) return res.status(400).json({ error: 'Jam selesai harus setelah jam mulai' })
-
       const lokasi = await db.location.findUnique({ where: { id: locationId } })
       if (!lokasi) return res.status(400).json({ error: 'Lokasi tidak ditemukan' })
       if (lokasi.type === 'OTHER' && !data.locationOther?.trim() && !seminar.locationOther) {
         return res.status(400).json({ error: 'Tuliskan nama lokasi pada pilihan Lainnya' })
       }
+
+      let sesiNorm = normalisasiSesi(data.sesi) ?? normalisasiSesi(seminar.sesi)
+      if (data.sesi !== undefined && !sesiNorm) {
+        return res.status(400).json({ error: 'Sesi tidak dikenal. Pilih sesi: PAGI, SIANG, atau FULL_DAY' })
+      }
+      if (!sesiNorm) {
+        sesiNorm = 'PAGI'
+      }
+
+      const startTime = DAFTAR_SESI[sesiNorm].start
+      const endTime = DAFTAR_SESI[sesiNorm].end
+
       const bentrok = await cekBentrok({
         locationId,
         tanggal: new Date(`${date}T00:00:00.000Z`),
@@ -248,6 +340,7 @@ seminarsRouter.patch('/:id', requireAuth, async (req: AuthRequest, res, next) =>
         date: new Date(`${date}T00:00:00.000Z`),
         startTime,
         endTime,
+        sesi: sesiNorm,
       })
     }
 
@@ -323,6 +416,7 @@ seminarsRouter.post('/:id/resubmit', requireAuth, async (req: AuthRequest, res, 
       tanggal: seminar.date,
       mulai: seminar.startTime,
       selesai: seminar.endTime,
+      sesi: seminar.sesi,
       abaikanSeminarId: seminar.id,
     })
     if (bentrok.length > 0) {
@@ -335,6 +429,11 @@ seminarsRouter.post('/:id/resubmit', requireAuth, async (req: AuthRequest, res, 
       where: { id: seminar.id },
       data: { status: 'MENUNGGU_VERIFIKASI', returnReason: null },
       include: { files: true, location: true },
+    })
+    // Tandai notifikasi penolakan seminar terkait sebagai dibaca
+    await db.notifikasi.updateMany({
+      where: { seminarId: seminar.id, userId: req.user!.id },
+      data: { dibaca: true },
     })
     await audit(req.user!.id, 'AJUKAN_ULANG', baru.title, `Kode ${seminar.code}`)
     res.json(baru)

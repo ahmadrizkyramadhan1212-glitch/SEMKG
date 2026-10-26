@@ -7,7 +7,9 @@ import { db } from '../db.js'
 import { requireAuth, requireRole, type AuthRequest } from '../lib/auth.js'
 import { audit } from '../lib/audit.js'
 import { queueEmail } from '../lib/email.js'
+import { buatNotifikasiPenolakan } from '../lib/notifikasi.js'
 import { cekBentrok } from '../lib/bentrok.js'
+import { labelJadwal } from '../lib/sesi.js'
 import { jalurLokal } from '../lib/upload.js'
 import { env } from '../env.js'
 
@@ -24,7 +26,7 @@ adminRouter.get('/dashboard', async (_req, res, next) => {
       db.attendance.count(),
       db.seminar.findMany({
         where: { status: 'DIJADWALKAN', date: { gte: new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00.000Z') } },
-        orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+        orderBy: [{ createdAt: 'desc' }],
         take: 5,
         include: { location: true, user: { select: { name: true } } },
       }),
@@ -63,7 +65,7 @@ adminRouter.get('/seminars', async (req, res, next) => {
     }
     const data = await db.seminar.findMany({
       where,
-      orderBy: [{ date: 'desc' }, { startTime: 'desc' }],
+      orderBy: [{ createdAt: 'desc' }],
       include: { location: true, files: true, user: { select: { name: true, nip: true, email: true, unit: true } } },
     })
     res.json(data)
@@ -81,7 +83,14 @@ adminRouter.post('/seminars/:id/setujui', async (req: AuthRequest, res, next) =>
       return res.status(400).json({ error: `Seminar berstatus ${seminar.status}, bukan menunggu verifikasi` })
     }
 
-    const bentrok = await cekBentrok({ locationId: seminar.locationId, tanggal: seminar.date, mulai: seminar.startTime, selesai: seminar.endTime, abaikanSeminarId: seminar.id })
+    const bentrok = await cekBentrok({
+      locationId: seminar.locationId,
+      tanggal: seminar.date,
+      mulai: seminar.startTime,
+      selesai: seminar.endTime,
+      sesi: seminar.sesi,
+      abaikanSeminarId: seminar.id,
+    })
     if (bentrok.length > 0) {
       return res.status(409).json({
         error: `Tidak dapat menyetujui: bentrok dengan "${bentrok[0]!.title}" (${bentrok[0]!.startTime}-${bentrok[0]!.endTime}) di lokasi yang sama.`,
@@ -100,7 +109,7 @@ adminRouter.post('/seminars/:id/setujui', async (req: AuthRequest, res, next) =>
         `Pengajuan seminar Anda telah DISETUJUI:`,
         `Judul: ${seminar.title}`,
         `Kode: ${seminar.code}`,
-        `Jadwal: ${seminar.date.toISOString().slice(0, 10)} pukul ${seminar.startTime}-${seminar.endTime} WIB`,
+        `Jadwal: ${seminar.date.toISOString().slice(0, 10)}, ${labelJadwal(seminar.startTime, seminar.endTime)}`,
         '',
         'Silakan serahkan SURAT IZIN ASLI ke admin unit selambat-lambatnya sehari sebelum pelaksanaan.',
         'Jadwal Anda kini tampil di timeline publik.',
@@ -113,37 +122,40 @@ adminRouter.post('/seminars/:id/setujui', async (req: AuthRequest, res, next) =>
   }
 })
 
-// ===== Kembalikan pengajuan: alasan wajib + email =====
-adminRouter.post('/seminars/:id/kembalikan', async (req: AuthRequest, res, next) => {
+// ===== Tolak / Kembalikan pengajuan: alasan penolakan wajib + notifikasi & email =====
+const handleTolakSeminar = async (req: AuthRequest, res: any, next: any) => {
   try {
-    const parsed = z.object({ alasan: z.string({ error: 'Alasan pengembalian wajib diisi' }).min(5, 'Alasan minimal 5 karakter') }).safeParse(req.body)
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Data tidak valid' })
+    const rawAlasan = String(req.body?.alasan_penolakan || req.body?.alasan || '').trim()
+    if (!rawAlasan || rawAlasan.length < 5) {
+      return res.status(400).json({ error: 'Alasan penolakan wajib diisi (minimal 5 karakter)' })
+    }
     const seminar = await db.seminar.findUnique({ where: { id: String(req.params.id) }, include: { user: true } })
     if (!seminar) return res.status(404).json({ error: 'Seminar tidak ditemukan' })
     if (seminar.status !== 'MENUNGGU_VERIFIKASI') {
       return res.status(400).json({ error: `Seminar berstatus ${seminar.status}, bukan menunggu verifikasi` })
     }
-    await db.seminar.update({ where: { id: seminar.id }, data: { status: 'DIKEMBALIKAN', returnReason: parsed.data.alasan } })
-    await queueEmail({
-      type: 'DIKEMBALIKAN',
-      toEmail: seminar.user.email,
-      toName: seminar.user.name,
-      subject: `Pengajuan seminar "${seminar.title}" dikembalikan`,
-      body: [
-        `Halo ${seminar.user.name},`,
-        '',
-        'Pengajuan seminar Anda dikembalikan untuk diperbaiki dengan alasan:',
-        parsed.data.alasan,
-        '',
-        'Silakan buka SINAR BMKG, perbaiki data, unggah ulang dokumen, lalu tekan Ajukan Ulang.',
-      ].join('\n'),
+    await db.seminar.update({ where: { id: seminar.id }, data: { status: 'DIKEMBALIKAN', returnReason: rawAlasan } })
+
+    // Simpan ke tabel 'notifikasis' (badge dashboard pemohon) dan pemicu antrean 'EmailJob' via Nodemailer
+    await buatNotifikasiPenolakan({
+      userId: seminar.userId,
+      seminarId: seminar.id,
+      seminarTitle: seminar.title,
+      seminarCode: seminar.code,
+      userEmail: seminar.user.email,
+      userName: seminar.user.name,
+      alasanPenolakan: rawAlasan,
     })
-    await audit(req.user!.id, 'KEMBALIKAN_SEMINAR', seminar.title, parsed.data.alasan)
-    res.json({ ok: true })
+
+    await audit(req.user!.id, 'TOLAK_SEMINAR', seminar.title, rawAlasan)
+    res.json({ ok: true, status: 'Ditolak', alasan_penolakan: rawAlasan })
   } catch (e) {
     next(e)
   }
-})
+}
+
+adminRouter.post('/seminars/:id/kembalikan', handleTolakSeminar)
+adminRouter.post('/seminars/:id/tolak', handleTolakSeminar)
 
 // ===== Tandai surat asli diterima =====
 adminRouter.post('/seminars/:id/surat-diterima', async (req: AuthRequest, res, next) => {
