@@ -34,7 +34,13 @@ Kalender bulanan (FullCalendar) **tidak dipakai**: timeline dibuat sendiri.
 Empat pilihan tetap (tabel `Location`): Gedung Auditorium (PHYSICAL, kapasitas 1.200), Ruang Rapat Lt. 1 Gedung A (PHYSICAL), Online (Zoom Meeting) (ONLINE), Lainnya (OTHER, teks bebas di `locationOther`).
 **Hanya lokasi PHYSICAL dicek bentrok.**
 
-Bentrok = lokasi sama + tanggal sama + rentang waktu tumpang tindih (`mulaiA < selesaiB && mulaiB < selesaiA`) dengan seminar berstatus `MENUNGGU_VERIFIKASI`, `DIJADWALKAN`, `BERLANGSUNG`, atau `SELESAI`. Status `DIKEMBALIKAN` dan `DIBATALKAN` **tidak** mengunci jadwal. Cek dilakukan saat memilih jadwal, saat ajukan/ajukan ulang, dan saat admin menyetujui.
+Sistem jadwal menggunakan sesi tetap dengan jam kerja 07.00 - 16.00 WIB:
+- **PAGI** (Half-day): 07.00 - 12.00 WIB
+- **SIANG** (Half-day): 12.00 - 16.00 WIB
+- **FULL_DAY**: 07.00 - 16.00 WIB (bentrok dengan Pagi dan Siang)
+TIDAK ADA buffer atau jeda kebersihan/sterilisasi ruangan.
+
+Bentrok = lokasi sama + tanggal sama + rentang waktu tumpang tindih (`mulaiA < selesaiB && mulaiB < selesaiA`) dengan seminar berstatus `MENUNGGU_VERIFIKASI`, `DIJADWALKAN`, `BERLANGSUNG`, atau `SELESAI`. Batas jam yang bersentuhan (PAGI berakhir 12.00, SIANG mulai 12.00) BUKAN bentrok, sehingga PAGI dan SIANG dapat digunakan oleh dua seminar berbeda pada ruangan dan tanggal yang sama. Status `DIKEMBALIKAN` dan `DIBATALKAN` **tidak** mengunci jadwal. Cek dilakukan saat memilih jadwal, saat ajukan/ajukan ulang, dan saat admin menyetujui.
 
 ## 4. Siklus status seminar
 
@@ -59,7 +65,7 @@ Sebelum SELESAI (kecuali sudah DIBATALKAN): user ATAU admin dapat membatalkan --
 
 ## 5. Fitur publik (tanpa login)
 
-- **Beranda**: Timeline Seminar (4 baris lokasi, 06.00-22.00, garis "sekarang"; **pengunjung hanya ganti hari** + "Hari ini"; user yang login juga bisa ganti bulan dan memilih tanggal; di HP berubah vertikal) + daftar "Seminar Mendatang". Hanya seminar yang sudah disetujui.
+- **Beranda**: Timeline Seminar (4 baris lokasi, sumbu 07.00-16.00 WIB dibagi dua pita PAGI 07-12 dan SIANG 12-16 dengan pembatas di 12.00, garis "sekarang" tampil di rentang 07.00-16.00; klik slot kosong mengisi lokasi, tanggal, dan sesi; di HP berubah vertikal dengan rentang yang sama) + daftar "Seminar Mendatang". Hanya seminar yang sudah disetujui.
 - **Riwayat Seminar**: seminar SELESAI dan DIBATALKAN. Detail seminar menampilkan **Dokumentasi** (berita + galeri foto dengan lightbox) dan **Materi** (unduh berkas atau buka tautan Drive) untuk yang SELESAI.
 - **Absensi** `/absen/:attendToken`: aktif **hanya saat BERLANGSUNG**. Isian: nama, NIP, email, persetujuan data pribadi (+ **kode hadir 6 digit** bila diaktifkan user). Satu email dan satu NIP hanya sekali per seminar. Tampilan mobile-first. Halaman Klaim dan Verifikasi Sertifikat ditautkan di footer halaman publik.
 - **Klaim sertifikat** `/klaim-sertifikat`: isi email + NIP yang cocok dengan data absensi, lalu unduh PDF sertifikat (hanya bila sudah digenerate). Cadangan bila email gagal. Dibatasi laju.
@@ -70,7 +76,7 @@ Sebelum SELESAI (kecuali sudah DIBATALKAN): user ATAU admin dapat membatalkan --
 
 Header: **Beranda, Seminar Saya, Hasil Seminar**, menu nama akun (Ganti Kata Sandi, Keluar). Tombol **+ Buat Seminar** berada di kanan judul halaman Beranda, Seminar Saya, dan Hasil Seminar.
 
-- **Buat Seminar (3 langkah)**: (1) Jadwal: lokasi, tanggal, jam mulai/selesai, indikator bentrok langsung; (2) Detail: judul, topik; (3) Lampiran: **surat izin wajib** (PDF/JPG/PNG/DOC/DOCX, maks 5 MB), **poster opsional** (JPG/PNG/WEBP/PDF, maks 5 MB). Hasil: `MENUNGGU_VERIFIKASI`, jadwal terkunci.
+- **Buat Seminar (3 langkah)**: (1) Jadwal: lokasi, tanggal, pemilihan sesi (Pagi 07.00-12.00, Siang 12.00-16.00, Full-day 07.00-16.00), indikator ketersediaan sesi (terisi) dan bentrok langsung; (2) Detail: judul, topik; (3) Lampiran: **surat izin wajib** (PDF/JPG/PNG/DOC/DOCX, maks 5 MB), **poster opsional** (JPG/PNG/WEBP/PDF, maks 5 MB). Hasil: `MENUNGGU_VERIFIKASI`, jadwal terkunci.
 - **Seminar Saya**: daftar + cari + filter status. Lencana merah bila ada yang DIKEMBALIKAN.
 - **Detail seminar (tab)**: Detail (info, banner status, link + QR absensi, tombol Mulai/Selesai/Batalkan/Ajukan Ulang), Dokumen, Peserta & Absensi (daftar hadir, jumlah, opsi kode hadir), Materi, Sertifikat, Berita. Tab Materi, Sertifikat, Berita aktif setelah SELESAI.
 - **Materi** (setelah SELESAI): user mengisi **jumlah materi N**, muncul N form: nama pemateri + berkas (maks **25 MB**: PDF/PPT/PPTX/DOC/DOCX/ZIP/JPG/PNG) **atau** tautan Google Drive. Boleh hapus.

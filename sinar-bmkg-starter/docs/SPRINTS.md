@@ -52,7 +52,7 @@ Kalau waktu mepet, **Sprint 0-5 adalah inti**. Sprint 6-7 bisa disederhanakan (s
 
 ## Sprint 3: Beranda timeline, riwayat, detail publik
 **Prompt:**
-> Implementasikan halaman publik sesuai SPEC bagian 5. Server: endpoint publik timeline per tanggal (hanya DIJADWALKAN/BERLANGSUNG/SELESAI; untuk user login tambahkan seminar miliknya yang menunggu), daftar seminar mendatang, riwayat (SELESAI dan DIBATALKAN), detail publik. Client: Beranda dengan Timeline Seminar 4 baris lokasi 06.00-22.00 (navigasi hari, bulan, pilih tanggal, Hari ini; tampilan vertikal di HP; **tanpa label status**), Seminar Mendatang, Riwayat, detail seminar publik. Blok seminar muncul dengan animasi bertahap. Untuk user login, klik slot kosong membuka Buat Seminar dengan jadwal terisi.
+> Implementasikan halaman publik sesuai SPEC bagian 5. Server: endpoint publik timeline per tanggal (hanya DIJADWALKAN/BERLANGSUNG/SELESAI; untuk user login tambahkan seminar miliknya yang menunggu), daftar seminar mendatang, riwayat (SELESAI dan DIBATALKAN), detail publik. Client: Beranda dengan Timeline Seminar 4 baris lokasi 07.00-16.00 (pita PAGI dan SIANG) (navigasi hari, bulan, pilih tanggal, Hari ini; tampilan vertikal di HP; **tanpa label status**), Seminar Mendatang, Riwayat, detail seminar publik. Blok seminar muncul dengan animasi bertahap. Untuk user login, klik slot kosong membuka Buat Seminar dengan jadwal terisi.
 
 **Tes:** pindah bulan, tampilan 390 px, seminar yang menunggu tidak terlihat publik, seminar dibatalkan tampil di riwayat.
 **Jelaskan sendiri:** cara menghitung posisi blok pada timeline, state di React.
