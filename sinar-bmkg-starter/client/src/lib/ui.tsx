@@ -18,21 +18,26 @@ const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)
 
 export function UiProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(
-    () => ((localStorage.getItem('sinar.theme') as Theme) || (matchMedia('(prefers-color-scheme: dark)').matches ? 'gelap' : 'terang')),
+    () => ((localStorage.getItem('SEMINAR.theme') as Theme) || (matchMedia('(prefers-color-scheme: dark)').matches ? 'gelap' : 'terang')),
   )
   const [bg, setBgState] = useState<BgMode>(() => {
     if (prefersReduced()) return 'diam'
-    return (localStorage.getItem('sinar.bg') as BgMode) || 'bergerak'
+    return (localStorage.getItem('SEMINAR.bg') as BgMode) || 'bergerak'
   })
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    localStorage.setItem('sinar.theme', theme)
+    const isDark = theme === 'gelap'
+    const val = isDark ? 'dark' : 'light'
+    document.documentElement.dataset.theme = val
+    document.documentElement.setAttribute('data-theme', val)
+    document.documentElement.classList.toggle('dark', isDark)
+    document.documentElement.classList.toggle('light', !isDark)
+    localStorage.setItem('SEMINAR.theme', theme)
   }, [theme])
 
   useEffect(() => {
     document.documentElement.dataset.bg = bg
-    if (!prefersReduced()) localStorage.setItem('sinar.bg', bg)
+    if (!prefersReduced()) localStorage.setItem('SEMINAR.bg', bg)
   }, [bg])
 
   // Bila pengguna sistem mengaktifkan kurangi gerakan, paksa latar diam

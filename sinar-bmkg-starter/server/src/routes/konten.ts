@@ -191,7 +191,7 @@ kontenRouter.get('/hasil', requireAuth, async (req: AuthRequest, res, next) => {
   try {
     const seminars = await db.seminar.findMany({
       where: { userId: req.user!.id, status: 'SELESAI' },
-      orderBy: { date: 'desc' },
+      orderBy: [{ date: 'desc' }, { startTime: 'desc' }],
       include: { news: { select: { id: true, title: true } }, materials: { select: { id: true } }, attendances: { select: { id: true } } },
     })
     res.json(

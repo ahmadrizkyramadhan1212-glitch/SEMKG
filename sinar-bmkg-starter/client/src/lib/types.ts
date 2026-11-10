@@ -24,6 +24,13 @@ export interface Seminar {
   date: string
   startTime: string
   endTime: string
+  sesi?: 'Pagi' | 'Siang' | 'Full Day' | null
+  tipe_acara?: 'Offline' | 'Online' | 'Hybrid' | null
+  tipeAcara?: 'Offline' | 'Online' | 'Hybrid' | null
+  zoom_link?: string | null
+  zoomLink?: string | null
+  zoom_passcode?: string | null
+  zoomPasscode?: string | null
   status: 'MENUNGGU_VERIFIKASI' | 'DIKEMBALIKAN' | 'DIJADWALKAN' | 'BERLANGSUNG' | 'SELESAI' | 'DIBATALKAN'
   returnReason: string | null
   letterReceived: boolean

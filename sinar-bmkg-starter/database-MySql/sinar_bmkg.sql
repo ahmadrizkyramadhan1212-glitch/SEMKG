@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `sinar_bmkg`
+-- Database: `SEMINAR_bmkg`
 --
 
 -- --------------------------------------------------------
@@ -31,9 +31,13 @@ CREATE TABLE `attendance` (
   `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `seminarId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nip` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nip` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `source` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'QR',
+  `instansi` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `statusPeserta` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `peran` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Peserta',
+  `alasan` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'WEB',
   `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -76,7 +80,7 @@ INSERT INTO `auditlog` (`id`, `userId`, `action`, `target`, `detail`, `createdAt
 ('cmv90illi0009ydfgowvhd7tq', 'cmv90g40f0005ydwknh5ku2u3', 'TAMBAH_MATERI', 'Dampak La Nina terhadap Curah Hujan', 'Tim Cuaca Maritim', '2026-10-15 04:02:05.911'),
 ('cmv90jcyf000fydfgwvr0rzyu', 'cmv90g40f0005ydwknh5ku2u3', 'TAYANGKAN_BERITA', 'Pemodelan Numerik Cuaca (WRF)', 'Seminar Pemodelan Numerik Cuaca WRF Berhasil', '2026-10-15 04:02:41.367'),
 ('cmv90jdhw000jydfgqq1uycmx', 'cmv90g40f0005ydwknh5ku2u3', 'UBAH_BERITA', 'Pemodelan Numerik Cuaca (WRF)', NULL, '2026-10-15 04:02:42.068'),
-('cmv90jds7000lydfgsqrjacnh', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SINAR', NULL, '2026-10-15 04:02:42.439'),
+('cmv90jds7000lydfgsqrjacnh', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SEMINAR', NULL, '2026-10-15 04:02:42.439'),
 ('cmv90jx8i000nydfggzbmskvm', 'cmv90g40f0005ydwknh5ku2u3', 'HAPUS_BERITA', 'Pemodelan Numerik Cuaca (WRF)', NULL, '2026-10-15 04:03:07.650'),
 ('cmv90mlqy000rydfgtwvy4ycf', 'cmv90g40f0005ydwknh5ku2u3', 'TAMBAH_MATERI', 'Dampak La Nina terhadap Curah Hujan', 'alert(1)Pak Budi', '2026-10-15 04:05:12.729'),
 ('cmv90mmad000tydfgavefyhj2', 'cmv90g40f0005ydwknh5ku2u3', 'HAPUS_MATERI', 'Dampak La Nina terhadap Curah Hujan', 'alert(1)Pak Budi', '2026-10-15 04:05:13.429'),
@@ -99,17 +103,17 @@ INSERT INTO `auditlog` (`id`, `userId`, `action`, `target`, `detail`, `createdAt
 ('cmv96h00l0003ydvkhjsi3rip', 'cmv90g40f0005ydwknh5ku2u3', 'LOGIN', 'Nabila Putri', NULL, '2026-10-15 06:48:48.981'),
 ('cmv96k5kk0005ydvkw3z625i2', 'cmv90g40f0005ydwknh5ku2u3', 'UBAH_BERITA', 'Dampak La Nina terhadap Curah Hujan', NULL, '2026-10-15 06:51:16.148'),
 ('cmv96l4tu0007ydvkg4z5esn5', 'cmv90g40f0005ydwknh5ku2u3', 'UBAH_BERITA', 'Dampak La Nina terhadap Curah Hujan', NULL, '2026-10-15 06:52:01.842'),
-('cmv96lz2i0009ydvkb1fr1imn', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SINAR', NULL, '2026-10-15 06:52:41.034'),
+('cmv96lz2i0009ydvkb1fr1imn', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SEMINAR', NULL, '2026-10-15 06:52:41.034'),
 ('cmv96v5jx000bydvkhfla109w', 'cmv90g40f0005ydwknh5ku2u3', 'LOGIN', 'Nabila Putri', NULL, '2026-10-15 06:59:49.337'),
 ('cmv96z966000hydvk0fvoxt6j', 'cmv90g40f0005ydwknh5ku2u3', 'BUAT_SEMINAR', 'SURGA', 'Kode 2610U6W, 2026-10-29 00:21-02:13', '2026-10-15 07:03:00.653'),
-('cmv973pbc000jydvkrorna4pc', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SINAR', NULL, '2026-10-15 07:06:28.200'),
+('cmv973pbc000jydvkrorna4pc', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SEMINAR', NULL, '2026-10-15 07:06:28.200'),
 ('cmv974g5a000mydvk73c1mggo', 'cmv90g4020004ydwkew3ecskk', 'SETUJUI_SEMINAR', 'SURGA', 'Kode 2610U6W', '2026-10-15 07:07:02.974'),
 ('cmv974tio000pydvktju50eb6', 'cmv90g4020004ydwkew3ecskk', 'KEMBALIKAN_SEMINAR', 'Webinar Kualitas Udara Perkotaan', 'tidak melampirkan surat izin \n', '2026-10-15 07:07:20.305'),
 ('cmv975lqh000qydvk34wbipic', NULL, 'LOGIN_GAGAL', 'nabila.putri@bmkg.go.id', 'NIP/email atau kata sandi salah', '2026-10-15 07:07:56.873'),
 ('cmv9760dh000sydvke5dosjap', 'cmv90g40f0005ydwknh5ku2u3', 'LOGIN', 'Nabila Putri', NULL, '2026-10-15 07:08:15.845'),
 ('cmv976t95000uydvkoi8awtqz', 'cmv90g40f0005ydwknh5ku2u3', 'MULAI_SEMINAR', 'SURGA', 'oleh pemilik', '2026-10-15 07:08:53.273'),
 ('cmv978ooh000wydvklkkcr3m6', 'cmv90g40f0005ydwknh5ku2u3', 'LOGIN', 'Nabila Putri', NULL, '2026-10-15 07:10:20.657'),
-('cmv97a0iq000yydvknnvnwr5w', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SINAR', NULL, '2026-10-15 07:11:22.659');
+('cmv97a0iq000yydvknnvnwr5w', 'cmv90g4020004ydwkew3ecskk', 'LOGIN', 'Admin SEMINAR', NULL, '2026-10-15 07:11:22.659');
 
 -- --------------------------------------------------------
 
@@ -157,7 +161,7 @@ CREATE TABLE `emailjob` (
 
 INSERT INTO `emailjob` (`id`, `type`, `toEmail`, `toName`, `subject`, `body`, `attachmentPath`, `attachmentName`, `certificateId`, `status`, `attempts`, `lastError`, `nextTryAt`, `createdAt`, `sentAt`) VALUES
 ('cmv974g4n000kydvkhrnmynel', 'DISETUJUI', 'nabila.putri@bmkg.go.id', 'Nabila Putri', 'Seminar \"SURGA\" disetujui', 'Halo Nabila Putri,\n\nPengajuan seminar Anda telah DISETUJUI:\nJudul: SURGA\nKode: 2610U6W\nJadwal: 2026-10-29 pukul 00:21-02:13 WIB\n\nSilakan serahkan SURAT IZIN ASLI ke admin unit selambat-lambatnya sehari sebelum pelaksanaan.\nJadwal Anda kini tampil di timeline publik.', NULL, NULL, NULL, 'MENUNGGU', 0, NULL, '2026-10-15 07:07:02.951', '2026-10-15 07:07:02.951', NULL),
-('cmv974tij000nydvknnijmq1a', 'DIKEMBALIKAN', 'nabila.putri@bmkg.go.id', 'Nabila Putri', 'Pengajuan seminar \"Webinar Kualitas Udara Perkotaan\" dikembalikan', 'Halo Nabila Putri,\n\nPengajuan seminar Anda dikembalikan untuk diperbaiki dengan alasan:\ntidak melampirkan surat izin \n\n\nSilakan buka SINAR BMKG, perbaiki data, unggah ulang dokumen, lalu tekan Ajukan Ulang.', NULL, NULL, NULL, 'MENUNGGU', 0, NULL, '2026-10-15 07:07:20.299', '2026-10-15 07:07:20.299', NULL);
+('cmv974tij000nydvknnijmq1a', 'DIKEMBALIKAN', 'nabila.putri@bmkg.go.id', 'Nabila Putri', 'Pengajuan seminar \"Webinar Kualitas Udara Perkotaan\" dikembalikan', 'Halo Nabila Putri,\n\nPengajuan seminar Anda dikembalikan untuk diperbaiki dengan alasan:\ntidak melampirkan surat izin \n\n\nSilakan buka SEMINAR BMKG, perbaiki data, unggah ulang dokumen, lalu tekan Ajukan Ulang.', NULL, NULL, NULL, 'MENUNGGU', 0, NULL, '2026-10-15 07:07:20.299', '2026-10-15 07:07:20.299', NULL);
 
 -- --------------------------------------------------------
 
@@ -265,6 +269,10 @@ CREATE TABLE `seminar` (
   `date` date NOT NULL,
   `startTime` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `endTime` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sesi` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tipe_acara` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Offline',
+  `zoom_link` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `zoom_passcode` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('MENUNGGU_VERIFIKASI','DIKEMBALIKAN','DIJADWALKAN','BERLANGSUNG','SELESAI','DIBATALKAN') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'MENUNGGU_VERIFIKASI',
   `returnReason` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `letterReceived` tinyint(1) NOT NULL DEFAULT '0',
@@ -274,6 +282,7 @@ CREATE TABLE `seminar` (
   `attendCodeOn` tinyint(1) NOT NULL DEFAULT '0',
   `attendCode` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `certTemplatePath` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cert_templates` json DEFAULT NULL,
   `certPageMode` enum('A4_LANDSCAPE','A4_PORTRAIT','SQUARE','WIDE_16_9','AUTO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'A4_LANDSCAPE',
   `certPageRatio` double DEFAULT NULL,
   `certLayout` json DEFAULT NULL,
@@ -348,7 +357,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `name`, `nip`, `email`, `phone`, `unit`, `role`, `passwordHash`, `active`, `createdAt`) VALUES
-('cmv90g4020004ydwkew3ecskk', 'Admin SINAR', '198001012005011001', 'admin@bmkg.go.id', '08123456789', 'Pusat Standardisasi', 'ADMIN', '$2b$10$tT98i9bUMiQ4MXhIzeLcV.UVJs3E7PLhsddfexmeNIlTRI0PQX6Q6', 1, '2026-10-15 04:00:09.794'),
+('cmv90g4020004ydwkew3ecskk', 'Admin SEMINAR', '198001012005011001', 'admin@bmkg.go.id', '08123456789', 'Pusat Standardisasi', 'ADMIN', '$2b$10$tT98i9bUMiQ4MXhIzeLcV.UVJs3E7PLhsddfexmeNIlTRI0PQX6Q6', 1, '2026-10-15 04:00:09.794'),
 ('cmv90g40f0005ydwknh5ku2u3', 'Nabila Putri', '199505052020122001', 'nabila.putri@bmkg.go.id', '08123456789', 'Bidang Klimatologi', 'USER', '$2b$10$tT98i9bUMiQ4MXhIzeLcV.UVJs3E7PLhsddfexmeNIlTRI0PQX6Q6', 1, '2026-10-15 04:00:09.808'),
 ('cmv90g40m0006ydwkp1rlqvm4', 'Andi Pratama', '199203032018011002', 'andi.pratama@bmkg.go.id', '08123456789', 'Bidang Geofisika', 'USER', '$2b$10$tT98i9bUMiQ4MXhIzeLcV.UVJs3E7PLhsddfexmeNIlTRI0PQX6Q6', 1, '2026-10-15 04:00:09.815');
 
@@ -501,3 +510,22 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+--
+-- Table structure for table `notifikasis`
+--
+
+CREATE TABLE IF NOT EXISTS `notifikasis` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `userId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `seminarId` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `judul` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `pesan` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tipe` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENOLAKAN',
+  `dibaca` tinyint(1) NOT NULL DEFAULT '0',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  KEY `notifikasis_userId_dibaca_idx` (`userId`,`dibaca`),
+  KEY `notifikasis_seminarId_idx` (`seminarId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

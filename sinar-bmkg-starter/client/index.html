@@ -4,7 +4,26 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo-bmkg.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>SINAR BMKG — Sistem Informasi Seminar Ilmiah</title>
+    <title>SEMINAR BMKG - Seminar Ilmiah BMKG</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              navy: {
+                800: '#0b172a',
+                900: '#08142b',
+                950: '#040810',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,10 +33,19 @@
     <script>
       // Tema & latar diterapkan sebelum render agar tidak berkedip
       try {
-        var t = localStorage.getItem('sinar.theme')
-        var m = matchMedia('(prefers-color-scheme: dark)').matches
-        document.documentElement.dataset.theme = t || (m ? 'gelap' : 'terang')
-        document.documentElement.dataset.bg = localStorage.getItem('sinar.bg') || 'bergerak'
+        var t = localStorage.getItem('SEMINAR.theme')
+        var isDark = t === 'gelap' || t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)
+        var themeVal = isDark ? 'dark' : 'light'
+        document.documentElement.dataset.theme = themeVal
+        document.documentElement.setAttribute('data-theme', themeVal)
+        if (isDark) {
+          document.documentElement.classList.add('dark')
+          document.documentElement.classList.remove('light')
+        } else {
+          document.documentElement.classList.remove('dark')
+          document.documentElement.classList.add('light')
+        }
+        document.documentElement.dataset.bg = localStorage.getItem('SEMINAR.bg') || 'bergerak'
       } catch (e) {}
     </script>
   </head>

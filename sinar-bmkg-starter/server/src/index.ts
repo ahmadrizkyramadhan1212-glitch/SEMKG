@@ -14,6 +14,8 @@ import { adminRouter } from './routes/admin.js'
 import { absensiRouter } from './routes/absensi.js'
 import { kontenRouter } from './routes/konten.js'
 import { sertifikatRouter } from './routes/sertifikat.js'
+import { notifikasiRouter } from './routes/notifikasi.js'
+import { apiV1Router } from './routes/api-v1.js'
 
 const app = express()
 
@@ -35,10 +37,12 @@ app.use('/api/audit', auditRouter)
 app.use('/api/seminars', seminarsRouter)
 app.use('/api/berkas', berkasRouter)
 app.use('/api/publik', publikRouter)
+app.use('/api/v1', apiV1Router)
 app.use('/api/admin', adminRouter)
 app.use('/api/absensi', absensiRouter)
 app.use('/api/konten', kontenRouter)
 app.use('/api/sertifikat', sertifikatRouter)
+app.use('/api/notifikasi', notifikasiRouter)
 
 app.get('/api/health', async (_req, res) => {
   try {
@@ -62,5 +66,5 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 })
 
 app.listen(env.port, () => {
-  console.log(`SINAR BMKG server berjalan di port ${env.port} (${isProd ? 'produksi' : 'pengembangan'})`)
+  console.log(`SEMINAR BMKG server berjalan di port ${env.port} (${isProd ? 'produksi' : 'pengembangan'})`)
 })

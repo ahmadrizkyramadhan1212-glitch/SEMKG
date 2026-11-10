@@ -1,4 +1,4 @@
-// SINAR BMKG - skema basis data final (MySQL). Sumber kebenaran fitur: docs/SPEC.md
+// SEMINAR BMKG - skema basis data final (MySQL). Sumber kebenaran fitur: docs/SPEC.md
 generator client {
   provider = "prisma-client-js"
 }
@@ -68,9 +68,10 @@ model User {
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 
-  seminars  Seminar[]
-  news      News[]
-  auditLogs AuditLog[]
+  seminars    Seminar[]
+  news        News[]
+  auditLogs   AuditLog[]
+  notifikasis Notifikasi[]
 }
 
 model Location {
@@ -98,6 +99,10 @@ model Seminar {
   date      DateTime @db.Date
   startTime String // "09:00" WIB
   endTime   String // "11:00" WIB
+  sesi      String? // "Pagi" | "Siang" | "Full Day"
+  tipe_acara String? @default("Offline")
+  zoom_link  String?
+  zoom_passcode String?
 
   status         SeminarStatus @default(MENUNGGU_VERIFIKASI)
   returnReason   String?
@@ -112,6 +117,7 @@ model Seminar {
 
   // sertifikat (diatur user setelah seminar selesai)
   certTemplatePath String?
+  cert_templates   Json?
   certPageMode     PageMode  @default(A4_LANDSCAPE)
   certPageRatio    Float?
   // layout elemen sertifikat (JSON), lihat docs/SPEC.md bagian 6
@@ -127,6 +133,7 @@ model Seminar {
   materials   Material[]
   attendances Attendance[]
   news        News?
+  notifikasis Notifikasi[]
 
   @@index([date, locationId])
   @@index([status])
@@ -162,19 +169,23 @@ model Material {
 }
 
 model Attendance {
-  id        String   @id @default(cuid())
-  seminarId String
-  seminar   Seminar  @relation(fields: [seminarId], references: [id], onDelete: Cascade)
-  name      String
-  nip       String
-  email     String
-  source    String   @default("QR") // QR | MANUAL
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  seminarId     String
+  seminar       Seminar  @relation(fields: [seminarId], references: [id], onDelete: Cascade)
+  name          String
+  nip           String?
+  email         String
+  instansi      String?
+  statusPeserta String?
+  peran         String?  @default("Peserta")
+  alasan        String?  @db.Text
+  source        String   @default("WEB") // WEB | MANUAL
+  createdAt     DateTime @default(now())
 
   certificate Certificate?
 
   @@unique([seminarId, email])
-  @@unique([seminarId, nip])
+  @@index([seminarId])
 }
 
 model Certificate {
@@ -244,4 +255,21 @@ model EmailJob {
   sentAt         DateTime?
 
   @@index([status, nextTryAt])
+}
+
+model Notifikasi {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seminarId String?
+  seminar   Seminar? @relation(fields: [seminarId], references: [id], onDelete: Cascade)
+  judul     String
+  pesan     String   @db.Text
+  tipe      String   @default("PENOLAKAN")
+  dibaca    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, dibaca])
+  @@index([seminarId])
+  @@map("notifikasis")
 }

@@ -5,7 +5,7 @@ import UserLayout from './layouts/UserLayout'
 import AdminLayout from './layouts/AdminLayout'
 import { RequireAuth, RequireAdmin } from './layouts/guards'
 import ThemeFab from './components/ThemeFab'
-import SkyBackground from './components/SkyBackground'
+
 import Home from './pages/Home'
 import Riwayat from './pages/Riwayat'
 import Login from './pages/Login'
@@ -27,7 +27,7 @@ import Arsip from './pages/admin/Arsip'
 export default function App() {
   return (
     <>
-      <SkyBackground />
+      
       <ThemeFab />
       <Routes>
         {/* Publik */}

@@ -44,10 +44,10 @@ export default function AdminLayout() {
     <>
       <aside className={`side ${buka ? 'open' : ''}`}>
         <div className="lg">
-          <i><Logo /></i>
+          <Logo height={36} />
           <span>
-            <b>SINAR</b>
-            <small>Panel Admin BMKG</small>
+            <b>SEMINAR BMKG</b>
+            <small>Panel Admin</small>
           </span>
         </div>
         {MENU.map(tampilMenu)}
@@ -71,14 +71,6 @@ export default function AdminLayout() {
           <strong>{me?.name}</strong>
         </div>
       </aside>
-      <button
-        className="btn hb"
-        style={{ position: 'fixed', left: 12, top: 12, zIndex: 6 }}
-        onClick={() => setBuka((v) => !v)}
-        aria-label="Buka menu admin"
-      >
-        ☰
-      </button>
       <main className="main">
         <Outlet />
       </main>

@@ -9,6 +9,7 @@ interface Hasil {
   nomor: string
   nama: string
   nip: string
+  peran?: string
   seminar: string
   tanggal: string
   lokasi: string
@@ -72,8 +73,10 @@ export default function VerifikasiSertifikat() {
               <dd style={{ wordBreak: 'break-all' }}>{hasil.nomor}</dd>
               <dt className="hint">Nama</dt>
               <dd>{hasil.nama}</dd>
+              <dt className="hint">Peran</dt>
+              <dd><strong>{hasil.peran || 'Peserta'}</strong></dd>
               <dt className="hint">NIP</dt>
-              <dd>{hasil.nip}</dd>
+              <dd>{hasil.nip || '—'}</dd>
               <dt className="hint">Seminar</dt>
               <dd>{hasil.seminar}</dd>
               <dt className="hint">Tanggal</dt>

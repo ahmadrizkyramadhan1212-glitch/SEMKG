@@ -5,7 +5,7 @@ import { env, isProd } from '../env.js'
 import { db } from '../db.js'
 import type { Role } from '@prisma/client'
 
-export const COOKIE_NAME = 'sinar_token'
+export const COOKIE_NAME = 'SEMINAR_token'
 
 export function signToken(userId: string): string {
   return jwt.sign({ sub: userId }, env.jwtSecret, { expiresIn: '30d' })

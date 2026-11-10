@@ -13,12 +13,13 @@ import { normalisasiLayout, type CertLayout, type ElemenCert, type KunciHuruf } 
 
 export interface DataSertifikat {
   nama: string
-  nip: string
+  nip?: string | null
   judul: string
   tanggal: Date
   lokasi: string
   code: string
   nomor: string
+  peran?: string | null
 }
 
 function heks(warna: string) {
@@ -160,16 +161,27 @@ async function gambarTeks(
 }
 
 export async function buatPdfSertifikat(input: {
-  seminar: Pick<Seminar, 'title' | 'date' | 'code' | 'certTemplatePath' | 'certPageMode' | 'certPageRatio' | 'certLayout' | 'locationOther'>
+  seminar: Pick<Seminar, 'title' | 'date' | 'code' | 'certTemplatePath' | 'certPageMode' | 'certPageRatio' | 'certLayout' | 'locationOther'> & { cert_templates?: any }
   lokasiNama: string
   data: DataSertifikat
   layout?: CertLayout
+  templatePath?: string | null
+  pageMode?: PageMode
+  pageRatio?: number | null
 }): Promise<Buffer> {
+  const peran = input.data.peran || 'Peserta'
+  const certTemplates = (input.seminar.cert_templates as Record<string, any>) || {}
+  const roleCfg = certTemplates[peran] || {}
+
+  const templatePath = input.templatePath ?? roleCfg.templatePath ?? input.seminar.certTemplatePath
+  const pageMode = input.pageMode ?? roleCfg.pageMode ?? input.seminar.certPageMode
+  const pageRatio = input.pageRatio ?? roleCfg.pageRatio ?? input.seminar.certPageRatio
+
   const layout = input.layout ?? normalisasiLayout(input.seminar.certLayout)
   const doc = await PDFDocument.create()
   doc.registerFontkit(fontkit)
 
-  const page = await siapkanLatar(doc, input.seminar.certTemplatePath, input.seminar.certPageMode, input.seminar.certPageRatio)
+  const page = await siapkanLatar(doc, templatePath, pageMode, pageRatio)
   const { width: W, height: H } = page.getSize()
 
   const fontCache = new Map<KunciHuruf, PDFFont>()
@@ -183,12 +195,16 @@ export async function buatPdfSertifikat(input: {
 
   const d = input.data
   await gambarTeks(page, fontCache, layout.name, d.nama)
+  if (layout.role?.on && d.peran) {
+    const teksPeran = d.peran === 'Peserta' ? 'Sebagai PESERTA' : `Sebagai ${d.peran.toUpperCase()}`
+    await gambarTeks(page, fontCache, layout.role, teksPeran)
+  }
   await gambarTeks(page, fontCache, layout.title, d.judul)
-  await gambarTeks(page, fontCache, layout.date, tanggalIndo(d.tanggal, layout.date.format))
-  await gambarTeks(page, fontCache, layout.seminarId, `ID seminar: ${d.code}`)
+  if (layout.date?.on) await gambarTeks(page, fontCache, layout.date, tanggalIndo(d.tanggal, layout.date.format))
+  if (layout.seminarId?.on) await gambarTeks(page, fontCache, layout.seminarId, `ID seminar: ${d.code}`)
   await gambarTeks(page, fontCache, layout.serial, d.nomor)
   if (layout.location) await gambarTeks(page, fontCache, layout.location, d.lokasi)
-  if (layout.nip) await gambarTeks(page, fontCache, layout.nip, `NIP ${d.nip}`)
+  if (layout.nip && d.nip) await gambarTeks(page, fontCache, layout.nip, `NIP ${d.nip}`)
 
   if (layout.qr.on) {
     const url = `${env.appUrl}/verifikasi?n=${encodeURIComponent(d.nomor)}`

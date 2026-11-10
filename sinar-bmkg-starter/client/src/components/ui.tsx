@@ -34,7 +34,7 @@ export function ErrorBox({ message, onCobaLagi }: { message: string; onCobaLagi?
 export function Badge({ status }: { status: string }) {
   const label: Record<string, string> = {
     MENUNGGU_VERIFIKASI: 'Menunggu verifikasi',
-    DIKEMBALIKAN: 'Dikembalikan',
+    DIKEMBALIKAN: 'Ditolak',
     DIJADWALKAN: 'Dijadwalkan',
     BERLANGSUNG: 'Berlangsung',
     SELESAI: 'Selesai',

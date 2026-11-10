@@ -71,6 +71,8 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
       <button
         key={s.id}
         className={`hv ${s.milik && s.status === 'MENUNGGU_VERIFIKASI' ? 'Menunggu' : ''} ${s.milik && (s.status === 'MENUNGGU_VERIFIKASI' || s.status === 'DIKEMBALIKAN') ? 'dim' : ''}`}
+        // File: client/src/components/Timeline.tsx (Baris 74)
+        // File: client/src/components/Timeline.tsx (Baris 74)
         style={{ left: `calc(${kiri(s.startTime)}% + 2px)`, width: `calc(${lebar(s.startTime, s.endTime)}% - 4px)`, minWidth: 95 }}
         onClick={(e) => {
           e.stopPropagation()
@@ -108,11 +110,12 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
         {/* Garis sekarang */}
         {tampilKini && <div className="nowl" style={{ ['--f' as string]: posisiKini / 100 }} />}
 
-        {/* Pita Header Sesi: PAGI (07-12) dan SIANG (12-16) */}
+        {/* Pita Header Sesi: 
+         (07-12) dan SIANG (12-16) */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
           <div style={{ width: 'var(--lw)', flex: 'none', paddingLeft: 2 }}>
             <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--p)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Pita Sesi
+               Sesi
             </span>
           </div>
           <div className="hr" style={{ height: 'auto', display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--glx)' }}>
@@ -122,7 +125,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                 textAlign: 'center',
                 background: 'rgba(37, 99, 235, 0.08)',
                 padding: '4px 0',
-                fontSize: '11px',
+                fontSize: '13px',
                 fontWeight: 700,
                 color: '#1d4ed8',
                 borderRight: '2px solid rgba(37, 99, 235, 0.35)',
@@ -132,7 +135,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                 gap: 6,
               }}
             >
-              <span>PAGI (07.00–12.00)</span>
+              <span>PAGI</span>
             </div>
             <div
               style={{
@@ -140,7 +143,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                 textAlign: 'center',
                 background: 'rgba(234, 88, 12, 0.08)',
                 padding: '4px 0',
-                fontSize: '11px',
+                fontSize: '13px',
                 fontWeight: 700,
                 color: '#c2410c',
                 display: 'flex',
@@ -149,7 +152,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                 gap: 6,
               }}
             >
-              <span>SIANG (12.00–16.00)</span>
+              <span>SIANG</span>
             </div>
           </div>
         </div>
@@ -215,7 +218,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                 <i
                   style={{
                     left: `${TITIK_PISAH_12}%`,
-                    borderLeft: '2px dashed rgba(37, 99, 235, 0.45)',
+                    borderLeft: '2px dashed rgba(8, 8, 8, 0.45)',
                     zIndex: 1,
                   }}
                 />
@@ -279,7 +282,7 @@ export default function Timeline({ tanggal, lokasi, seminar }: { tanggal: string
                       <div style={{ overflow: 'hidden', paddingRight: 8 }}>
                         <span style={{ display: 'block', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</span>
                         <small className="hint" style={{ display: 'block', marginTop: 2 }}>
-                          {namaSesi ? `Sesi ${namaSesi} • ` : ''}📍 {namaTempat}
+                          {namaSesi ? `Sesi ${namaSesi} • ` : ''} {namaTempat}
                         </small>
                       </div>
                       <span className="hint" style={{ whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--p)' }}>

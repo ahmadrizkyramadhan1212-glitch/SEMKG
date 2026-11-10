@@ -3,7 +3,7 @@
 import sharp from 'sharp'
 
 const masuk = 'C:/Users/ahmad/Downloads/logo bmkg.jpg'
-const keluar = 'C:/laragon/www/APLIKASI SEMINAR BMKG/sinar-bmkg-starter/client/public/logo-bmkg.png'
+const keluar = 'C:/laragon/www/APLIKASI SEMINAR BMKG/SEMINAR-bmkg-starter/client/public/logo-bmkg.png'
 
 const { data, info } = await sharp(masuk).ensureAlpha().median(3).raw().toBuffer({ resolveWithObject: true })
 const { width: W, height: H, channels: C } = info

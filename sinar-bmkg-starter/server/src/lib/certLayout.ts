@@ -1,6 +1,9 @@
 // Bentuk JSON Seminar.certLayout. Semua posisi dalam persen (0-100) dari kiri-atas halaman.
 import { z } from 'zod'
 
+export const DAFTAR_PERAN = ['Peserta', 'Narasumber', 'Moderator', 'Panitia'] as const
+export type PeranSertifikat = (typeof DAFTAR_PERAN)[number]
+
 export const KUNCI_HURUF = [
   'playfair',
   'greatvibes',
@@ -46,6 +49,7 @@ export type ElemenCert = z.infer<typeof elemenSkema>
 
 export const layoutSkema = z.object({
   name: elemenSkema,
+  role: elemenSkema.optional(),
   title: elemenSkema,
   date: elemenSkema,
   seminarId: elemenSkema,
@@ -65,12 +69,14 @@ const dasar = (p: Partial<ElemenCert> & Pick<ElemenCert, 'x' | 'y' | 'size'>): E
   ...p,
 })
 
-export function layoutBawaan(): CertLayout {
+export function layoutBawaan(peran: string = 'Peserta'): CertLayout {
+  const isPeserta = peran === 'Peserta'
   return {
-    name: dasar({ on: true, x: 50, y: 48, size: 4.2, font: 'playfair', color: '#0B3C8C', align: 'center' }),
+    name: dasar({ on: true, x: 50, y: 46, size: 4.2, font: 'playfair', color: '#0B3C8C', align: 'center' }),
+    role: dasar({ on: !isPeserta, x: 50, y: 53, size: 2.2, font: 'montserrat', color: '#0B3C8C', align: 'center' }),
     title: dasar({ on: true, x: 50, y: 62, size: 2.2, font: 'montserrat', color: '#1B2433', align: 'center' }),
     date: dasar({ on: false, x: 50, y: 72, size: 1.8, font: 'montserrat', color: '#44505F', align: 'center', format: 'd MMMM yyyy' }),
-    seminarId: dasar({ on: true, x: 50, y: 18, size: 1.6, font: 'montserrat', color: '#6B7685', align: 'center' }),
+    seminarId: dasar({ on: false, x: 50, y: 18, size: 1.6, font: 'montserrat', color: '#6B7685', align: 'center' }),
     serial: dasar({ on: true, x: 92, y: 8, size: 1.4, font: 'montserrat', color: '#6B7685', align: 'right' }),
     qr: dasar({ on: true, x: 10, y: 88, size: 11, font: 'montserrat', color: '#000000', align: 'center' }),
     location: dasar({ on: false, x: 50, y: 78, size: 1.6, font: 'montserrat', color: '#44505F', align: 'center' }),
@@ -79,12 +85,24 @@ export function layoutBawaan(): CertLayout {
 }
 
 export function normalisasiLayout(mentah: unknown): CertLayout {
-  const bawaan = layoutBawaan()
+  return normalisasiLayoutPeran(mentah, 'Peserta')
+}
+
+export function normalisasiLayoutPeran(mentah: unknown, peran: string = 'Peserta'): CertLayout {
+  const bawaan = layoutBawaan(peran)
   if (!mentah || typeof mentah !== 'object') return bawaan
-  const parsed = layoutSkema.safeParse({ ...bawaan, ...(mentah as object) })
+  const obj = mentah as Record<string, any>
+  // Cek apakah mentah menyimpan objek per peran { Peserta: ..., Narasumber: ... }
+  const sumber = obj[peran] && typeof obj[peran] === 'object' ? obj[peran] : obj
+  const parsed = layoutSkema.safeParse({ ...bawaan, ...sumber })
   if (!parsed.success) return bawaan
-  // Nama peserta selalu aktif (SPEC)
-  return { ...parsed.data, name: { ...parsed.data.name, on: true } }
+  // Nama peserta, Nomor Seri, dan QR Code verifikasi selalu aktif
+  return {
+    ...parsed.data,
+    name: { ...parsed.data.name, on: true },
+    serial: { ...parsed.data.serial, on: true },
+    qr: { ...parsed.data.qr, on: true },
+  }
 }
 
 export const pageModeSkema = z.enum(['A4_LANDSCAPE', 'A4_PORTRAIT', 'SQUARE', 'WIDE_16_9', 'AUTO'])

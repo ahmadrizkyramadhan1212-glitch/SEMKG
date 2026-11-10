@@ -1,0 +1,473 @@
+/* ============================================================
+   HERO PANEL SEMINAR ILMIAH BMKG (100% PURE CSS & INLINE SVG)
+   Dilarang keras memakai file gambar eksternal (img/png/jpg).
+   Mendukung penuh Mode Gelap (Dark Mode) & Mode Terang (Light Mode).
+   ============================================================ */
+
+/* 1. Kontainer Utama & Background */
+.hero-panel-container {
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(24px, 4vh, 48px) clamp(24px, 4vw, 44px);
+  box-sizing: border-box;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+/* --- TEMA GELAP (DARK MODE): Deep Navy #08142b --- */
+.hero-panel-container,
+.hero-panel-container.dark,
+.login-split-page.dark .hero-panel-container,
+html.dark .hero-panel-container,
+html[data-theme='dark'] .hero-panel-container,
+html[data-theme='gelap'] .hero-panel-container {
+  background-color: #08142b;
+  background-image: 
+    linear-gradient(rgba(56, 189, 248, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.055) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center center;
+  color: #ffffff;
+}
+
+/* --- TEMA TERANG (LIGHT MODE): Biru Langit Lembut Elegan --- */
+.hero-panel-container.light,
+.login-split-page.light .hero-panel-container,
+html.light:not(.dark) .login-split-page:not(.dark) .hero-panel-container,
+html[data-theme='light'] .hero-panel-container,
+html[data-theme='terang'] .hero-panel-container {
+  background-color: #edf4fc;
+  background-image: 
+    linear-gradient(rgba(11, 60, 140, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 60, 140, 0.065) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center center;
+  color: #0f172a;
+}
+
+/* Pola Grid Vignette */
+.hero-grid-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.35s ease;
+}
+.hero-panel-container .hero-grid-pattern,
+.hero-panel-container.dark .hero-grid-pattern,
+.login-split-page.dark .hero-panel-container .hero-grid-pattern,
+html.dark .hero-panel-container .hero-grid-pattern {
+  background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(4, 11, 24, 0.75) 100%);
+}
+.hero-panel-container.light .hero-grid-pattern,
+.login-split-page.light .hero-panel-container .hero-grid-pattern,
+html.light:not(.dark) .login-split-page:not(.dark) .hero-panel-container .hero-grid-pattern {
+  background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(219, 234, 254, 0.5) 100%);
+}
+
+/* 2. Efek Bercak Cahaya / Bokeh / Lens Flare Bulat di Pojok-Pojok */
+.hero-flare {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  transition: all 0.35s ease;
+}
+
+/* Bokeh Pojok Kiri Atas */
+.hero-flare-top-left {
+  top: -80px;
+  left: -80px;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.28) 0%, rgba(14, 165, 233, 0.12) 42%, transparent 70%);
+  filter: blur(55px);
+  -webkit-filter: blur(55px);
+  opacity: 0.85;
+}
+.hero-panel-container.light .hero-flare-top-left,
+.login-split-page.light .hero-panel-container .hero-flare-top-left {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(186, 230, 253, 0.2) 45%, transparent 70%);
+}
+
+/* Bokeh Pojok Kanan Bawah */
+.hero-flare-bottom-right {
+  bottom: -90px;
+  right: -90px;
+  width: 460px;
+  height: 460px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.24) 0%, rgba(30, 58, 138, 0.1) 48%, transparent 72%);
+  filter: blur(65px);
+  -webkit-filter: blur(65px);
+  opacity: 0.8;
+}
+.hero-panel-container.light .hero-flare-bottom-right,
+.login-split-page.light .hero-panel-container .hero-flare-bottom-right {
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(191, 219, 254, 0.2) 48%, transparent 72%);
+}
+
+/* Aura Hangat Keemasan Halus */
+.hero-flare-center-amber {
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.07) 0%, rgba(217, 119, 6, 0.03) 40%, transparent 70%);
+  filter: blur(50px);
+  -webkit-filter: blur(50px);
+  opacity: 0.9;
+}
+.hero-panel-container.light .hero-flare-center-amber,
+.login-split-page.light .hero-panel-container .hero-flare-center-amber {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+}
+
+/* Konten Utama Terpusat */
+.hero-content-wrapper {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 470px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(16px, 2.6vh, 26px);
+  box-sizing: border-box;
+}
+
+/* 3. Card Logo "SEMINAR BMKG" (Putih Terang, Rounded Mulus, Drop Shadow Lembut) */
+.hero-logo-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 14px 26px;
+  box-shadow: 
+    0 20px 40px -8px rgba(0, 0, 0, 0.38),
+    0 6px 16px -2px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  user-select: none;
+}
+.hero-panel-container.light .hero-logo-card,
+.login-split-page.light .hero-panel-container .hero-logo-card {
+  box-shadow: 
+    0 16px 36px -6px rgba(11, 60, 140, 0.14),
+    0 4px 12px -2px rgba(11, 60, 140, 0.06),
+    0 0 0 1px rgba(11, 60, 140, 0.08);
+}
+.hero-logo-card:hover {
+  transform: translateY(-2px);
+}
+
+.hero-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+
+.hero-logo-svg {
+  flex-shrink: 0;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.hero-logo-card:hover .hero-logo-svg {
+  transform: scale(1.04);
+}
+
+.hero-logo-text-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-logo-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #08214d;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.hero-logo-subtitle {
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 3px;
+  line-height: 1.2;
+}
+
+/* 4. Pill / Badge Peringatan (Border Emas/Oranye, Background Transparan Gelap, Icon Gembok) */
+.hero-security-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9999px;
+  padding: 6.5px 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+}
+
+/* Badge di Dark Mode */
+.hero-panel-container .hero-security-pill,
+.hero-panel-container.dark .hero-security-pill,
+.login-split-page.dark .hero-panel-container .hero-security-pill {
+  background: rgba(245, 158, 11, 0.09);
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(245, 158, 11, 0.25);
+}
+.hero-panel-container .hero-lock-svg,
+.hero-panel-container.dark .hero-lock-svg,
+.login-split-page.dark .hero-panel-container .hero-lock-svg {
+  color: #f59e0b;
+}
+.hero-panel-container .hero-pill-text,
+.hero-panel-container.dark .hero-pill-text,
+.login-split-page.dark .hero-panel-container .hero-pill-text {
+  color: #fbbf24;
+}
+
+/* Badge di Light Mode */
+.hero-panel-container.light .hero-security-pill,
+.login-split-page.light .hero-panel-container .hero-security-pill {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(217, 119, 6, 0.55);
+  box-shadow: 
+    0 4px 14px rgba(245, 158, 11, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.hero-panel-container.light .hero-lock-svg,
+.login-split-page.light .hero-panel-container .hero-lock-svg {
+  color: #d97706;
+}
+.hero-panel-container.light .hero-pill-text,
+.login-split-page.light .hero-panel-container .hero-pill-text {
+  color: #b45309;
+}
+
+.hero-lock-svg {
+  flex-shrink: 0;
+  display: block;
+}
+
+.hero-pill-text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* 5. Teks Judul & Deskripsi (Center Aligned) */
+.hero-text-center-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  margin: 4px 0 8px;
+}
+
+.hero-main-title {
+  font-size: clamp(30px, 3.4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.18;
+  transition: color 0.35s ease;
+}
+
+/* Judul Dark vs Light */
+.hero-panel-container .hero-main-title,
+.hero-panel-container.dark .hero-main-title,
+.login-split-page.dark .hero-panel-container .hero-main-title {
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+}
+.hero-panel-container.light .hero-main-title,
+.login-split-page.light .hero-panel-container .hero-main-title {
+  color: #08214d;
+  text-shadow: none;
+}
+
+.hero-main-desc {
+  font-size: clamp(13.5px, 1.1vw, 15px);
+  line-height: 1.62;
+  margin: 0;
+  max-width: 440px;
+  text-align: center;
+  transition: color 0.35s ease;
+}
+/* Deskripsi Dark vs Light */
+.hero-panel-container .hero-main-desc,
+.hero-panel-container.dark .hero-main-desc,
+.login-split-page.dark .hero-panel-container .hero-main-desc {
+  color: rgba(255, 255, 255, 0.82);
+}
+.hero-panel-container.light .hero-main-desc,
+.login-split-page.light .hero-panel-container .hero-main-desc {
+  color: #334155;
+}
+
+/* 6. Tiga Tombol Navigasi Glassmorphism */
+.hero-glass-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hero-glass-btn {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 16px;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+/* Tombol Glassmorphism di Dark Mode */
+.hero-panel-container .hero-glass-btn,
+.hero-panel-container.dark .hero-glass-btn,
+.login-split-page.dark .hero-panel-container .hero-glass-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.hero-panel-container .hero-glass-btn:hover,
+.hero-panel-container.dark .hero-glass-btn:hover,
+.login-split-page.dark .hero-panel-container .hero-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(56, 189, 248, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 14px 30px rgba(0, 0, 0, 0.35),
+    0 0 18px rgba(56, 189, 248, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  color: #38bdf8;
+}
+.hero-panel-container .hero-glass-icon-box,
+.hero-panel-container.dark .hero-glass-icon-box,
+.login-split-page.dark .hero-panel-container .hero-glass-icon-box {
+  background: rgba(255, 255, 255, 0.08);
+}
+.hero-panel-container .hero-glass-btn:hover .hero-glass-icon-box,
+.hero-panel-container.dark .hero-glass-btn:hover .hero-glass-icon-box,
+.login-split-page.dark .hero-panel-container .hero-glass-btn:hover .hero-glass-icon-box {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  transform: scale(1.08);
+}
+
+/* Tombol Glassmorphism di Light Mode */
+.hero-panel-container.light .hero-glass-btn,
+.login-split-page.light .hero-panel-container .hero-glass-btn {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(11, 60, 140, 0.14);
+  color: #0b3c8c;
+  box-shadow: 
+    0 6px 18px rgba(11, 60, 140, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.hero-panel-container.light .hero-glass-btn:hover,
+.login-split-page.light .hero-panel-container .hero-glass-btn:hover {
+  background: #ffffff;
+  border-color: rgba(11, 60, 140, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 26px rgba(11, 60, 140, 0.16),
+    0 0 16px rgba(11, 60, 140, 0.1);
+  color: #08214d;
+}
+.hero-panel-container.light .hero-glass-icon-box,
+.login-split-page.light .hero-panel-container .hero-glass-icon-box {
+  background: rgba(11, 60, 140, 0.08);
+}
+.hero-panel-container.light .hero-glass-btn:hover .hero-glass-icon-box,
+.login-split-page.light .hero-panel-container .hero-glass-btn:hover .hero-glass-icon-box {
+  background: rgba(11, 60, 140, 0.14);
+  color: #08214d;
+  transform: scale(1.08);
+}
+
+.hero-glass-btn:active {
+  transform: translateY(-0.5px) scale(0.98);
+}
+
+.hero-glass-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  transition: all 0.25s ease;
+}
+
+.hero-glass-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  color: inherit;
+}
+
+/* Responsif Mobile & Layar Tablet */
+@media (max-width: 900px) {
+  .hero-panel-container {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    height: auto;
+    max-height: none;
+    padding: 44px 20px 36px;
+  }
+  .hero-content-wrapper {
+    max-width: 100%;
+    gap: 20px;
+  }
+  .hero-main-title {
+    font-size: 28px;
+  }
+  .hero-main-desc {
+    font-size: 13.5px;
+  }
+  .hero-glass-actions {
+    gap: 10px;
+  }
+  .hero-glass-btn {
+    padding: 13px 8px;
+  }
+}

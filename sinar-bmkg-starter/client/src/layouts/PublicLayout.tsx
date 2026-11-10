@@ -13,9 +13,9 @@ export default function PublicLayout() {
     <div className="pub">
       <nav className="nav" aria-label="Navigasi utama">
         <Link to="/" className="lg">
-          <i><Logo /></i>
+          <Logo height={36} />
           <span>
-            <b>SINAR</b>
+            <b>SEMINAR BMKG</b>
             <small>Sistem Informasi Seminar Ilmiah</small>
           </span>
         </Link>
@@ -52,7 +52,7 @@ export default function PublicLayout() {
         <p>
           <Link to="/klaim-sertifikat">Klaim Sertifikat</Link> · <Link to="/verifikasi">Verifikasi Sertifikat</Link>
         </p>
-        <p>SINAR BMKG — Sistem Informasi Seminar Ilmiah © {new Date().getFullYear()}</p>
+        <p>SEMINAR BMKG — Sistem Informasi Seminar Ilmiah © {new Date().getFullYear()}</p>
       </footer>
     </div>
   )
